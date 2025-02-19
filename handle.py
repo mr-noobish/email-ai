@@ -1,7 +1,6 @@
 from mail import send_email
 from config import *
 from sql import session, User, Conversation
-from ai import chain
 
 
 def new_chat(name, owner):

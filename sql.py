@@ -1,7 +1,6 @@
-from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, Boolean, JSON
+from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.mutable import MutableDict
 from mail import send_email
 from config import *
 from ai import chain
@@ -34,7 +33,6 @@ class Conversation(Base):
     name = Column("name", String)
     context = Column("Context", String)
     owner = Column(String, ForeignKey(User.email_addr))
-    #config = Column("config", MutableDict.as_mutable(JSON))
 
     def __init__(self, context, owner, name):
         self.context = context
