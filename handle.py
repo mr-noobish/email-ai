@@ -98,6 +98,8 @@ def handle_repl(input):
             except:
                 return
             session.commit()
+        else:
+            print("insufficient args")
     elif command == "/reset chat:":
         if arg:
             results = session.query(Conversation).filter(Conversation.name == arg).all()
@@ -107,6 +109,8 @@ def handle_repl(input):
             except:
                 return
             session.commit()
+        else:
+            print("insufficient args")
     elif command == "/admin:":
         if arg:
             results = session.query(User).filter(User.email_addr == arg).all()
@@ -116,6 +120,8 @@ def handle_repl(input):
             except:
                 return
             session.commit()
+        else:
+            print("insufficient args")
     elif command == "/de-admin:":
         if arg:
             results = session.query(User).filter(User.email_addr == arg).all()
@@ -125,6 +131,8 @@ def handle_repl(input):
             except:
                 return
             session.commit()
+        else:
+            print("insufficient args")
     else:
         print("not a command")
 
@@ -150,22 +158,44 @@ def handle_subject(subject, email_addr, message):
     elif command == "new chat:":
         if arg:
             new_chat(arg, email_addr)
+        else:
+            send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
     elif command == "chat:":
         if arg:
-            chat = results.filter(Conversation.name == arg).all()[0]
-            chat.chat(email_addr, message)
+            chats = results.filter(Conversation.name == arg).all()
+            chat = chats[0] if chats else None
+            try:
+                chat.chat(email_addr, message)
+            except:
+                send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
+        else:
+            send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
     elif command == "reset chat:":
         if arg:
-            chat = results.filter(Conversation.name == arg).all()[0]
-            chat.reset_chat(email_addr)
+            chats = results.filter(Conversation.name == arg).all()
+            chat = chats[0] if chats else None
+            try:
+                chat.reset_chat(email_addr, message)
+            except:
+                send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
+        else:
+            send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
     elif command == "undo:":
         if arg:
-            chat = results.filter(Conversation.name == arg).all()[0]
-            chat.undo(email_addr)
+            chats = results.filter(Conversation.name == arg).all()
+            chat = chats[0] if chats else None
+            try:
+                chat.undo(email_addr, message)
+            except:
+                send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
+        else:
+            send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
     elif command.startswith("/") and session.query(User).filter(User.email_addr == email_addr).all()[0].admin == True:
         if command == "/del user:":
             if arg:
                 del_user(arg)
+            else:
+                send_email(EMAIL_ADDRESS, email_addr, "Please provide a user.", "insufficient arg")
         elif command == "/list users:":
             user_list = ""
             results = session.query(User).all()
