@@ -4,13 +4,20 @@ from sql import session, User, Conversation
 
 
 def new_chat(name, owner):
-    chat = Conversation("", owner, name)
-    session.add(chat)
-    session.commit()
-    send_email(EMAIL_ADDRESS, owner, f"""
-    Chat "{name}" has been created. To chat in "{name}",
-    type "chat: {name}" in the subject of an email.
-    """, "Chat Creation")
+    chats = session.query(Conversation).filter(Conversation.name == name and Conversation.owner == owner).all()
+    if len(chats) >= 1:
+        send_email(EMAIL_ADDRESS, owner, f"""
+        Chat "{name}" already exists.
+        To chat with it, type "chat: {name}" in the subject of an email.
+        """, "Already Defined Chat")
+    else:
+        chat = Conversation("", owner, name)
+        session.add(chat)
+        session.commit()
+        send_email(EMAIL_ADDRESS, owner, f"""
+        Chat "{name}" has been created. To chat in "{name}",
+        type "chat: {name}" in the subject of an email.
+        """, "Chat Creation")
 
 def suggest_new_user(email_addr):
     send_email(EMAIL_ADDRESS, email_addr, """
@@ -99,17 +106,6 @@ def handle_repl(input):
             session.commit()
         else:
             print("insufficient args")
-    elif command == "/reset chat:":
-        if arg:
-            results = session.query(Conversation).filter(Conversation.name == arg).all()
-            result = results[0] if results else None
-            try:
-                result.context = ""
-            except:
-                return
-            session.commit()
-        else:
-            print("insufficient args")
     elif command == "/admin:":
         if arg:
             results = session.query(User).filter(User.email_addr == arg).all()
@@ -165,7 +161,8 @@ def handle_subject(subject, email_addr, message):
             chat = chats[0] if chats else None
             try:
                 chat.chat(email_addr, message)
-            except:
+            except Exception as e:
+                print(e)
                 send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
         else:
             send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
@@ -175,7 +172,8 @@ def handle_subject(subject, email_addr, message):
             chat = chats[0] if chats else None
             try:
                 chat.reset_chat(email_addr, message)
-            except:
+            except Exception as e:
+                print(e)
                 send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
         else:
             send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
@@ -185,7 +183,8 @@ def handle_subject(subject, email_addr, message):
             chat = chats[0] if chats else None
             try:
                 chat.undo(email_addr, message)
-            except:
+            except Exception as e:
+                print(e)
                 send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
         else:
             send_email(EMAIL_ADDRESS, email_addr, "Please provide a chat name.", "Insufficient Arguments")
