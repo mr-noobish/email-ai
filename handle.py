@@ -171,7 +171,7 @@ def handle_subject(subject, email_addr, message):
             chats = results.filter(Conversation.name == arg).all()
             chat = chats[0] if chats else None
             try:
-                chat.reset_chat(email_addr, message)
+                chat.reset_chat(email_addr)
             except Exception as e:
                 print(e)
                 send_email(EMAIL_ADDRESS, email_addr, f"Chat '{arg} not found, maybe it's a typo.", "Chat Not Found")
