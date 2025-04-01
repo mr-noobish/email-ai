@@ -18,11 +18,12 @@ def new_chat(name, owner):
         Chat "{name}" has been created. To chat in "{name}",
         type "chat: {name}" in the subject of an email.
         """, "Chat Creation")
+
 def list_chats(email_addr):
     results = session.query(Conversation).filter(Conversation.owner == email_addr).all()
     chat_list = ""
     for chat in results:
-        chat_list += "\t"
+        chat_list += "-\t"
         chat_list += chat.name
         chat_list += "\n"
     send_email(EMAIL_ADDRESS, email_addr, f"""
