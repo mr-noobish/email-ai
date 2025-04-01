@@ -18,6 +18,16 @@ def new_chat(name, owner):
         Chat "{name}" has been created. To chat in "{name}",
         type "chat: {name}" in the subject of an email.
         """, "Chat Creation")
+def list_chats(email_addr):
+    results = session.query(Conversation).filter(Conversation.owner == email_addr).all()
+    chat_list = ""
+    for chat in results:
+        chat_list += "\t"
+        chat_list += chat.name
+        chat_list += "\n"
+    send_email(EMAIL_ADDRESS, email_addr, f"""
+    Your chats are
+    {chat_list}""", "Chat Names")
 
 def suggest_new_user(email_addr):
     send_email(EMAIL_ADDRESS, email_addr, """
@@ -150,6 +160,8 @@ def handle_subject(subject, email_addr, message):
         del_user(email_addr)
     elif command == "new user:":
         new_user(email_addr)
+    elif command == "list chats:":
+        list_chats(email_addr)
     elif command == "new chat:":
         if arg:
             new_chat(arg, email_addr)
